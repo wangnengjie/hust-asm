@@ -269,39 +269,6 @@ calc_rate proc
     ret
 calc_rate endp
 
-
-; calc_rate proc
-;     ; ax point to item
-;     ; dw in_price(11), sell_price(13), in_amount(15), sell_amount(17), rate(19)
-;     pushad
-;     mov     si, ax
-;     mov     ax, 13[si]
-;     movzx   bx, byte ptr 10[si]
-;     mul     bx
-;     push    dx
-;     push    ax
-
-;     movzx   eax, word ptr 11[si]
-;     mov     ebx, 1280
-;     mul     ebx
-;     pop     ebx
-;     div     ebx
-;     push    eax
-
-;     movzx   eax, word ptr 17[si]
-;     shl     eax, 6 ; *64
-;     xor     edx, edx
-;     movzx   ebx, word ptr 15[si]
-;     div     ebx
-
-;     mov     ebx, eax
-;     pop     eax
-;     add     eax, ebx
-;     mov     19[si], ax
-;     popad
-;     ret
-; calc_rate endp
-
 print_line proc
     push    ax
     push    dx
