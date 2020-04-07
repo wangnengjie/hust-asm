@@ -167,11 +167,11 @@ search_item proc
     call    print_line
     movzx   bx, in_item + 1
     mov     byte ptr in_item+2[bx], 0
-    lea     si, in_item + 2
     lea     dx, item_1
     mov     cx, max_item
 item_loop:
     mov     bx, dx
+    lea     si, in_item + 2
 check_item:
     mov     al, [bx]
     cmp     byte ptr[si], al
