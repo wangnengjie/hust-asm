@@ -46,14 +46,20 @@ data segment use16 para public 'data'
     item_temp       db  N - 2 dup('TempValue', 0, 8, 15, 0, 20, 0, 30, 0, 2, 0, ?, ?)
     
     in_item         db  10
-                    db  10
+                    db  0
                     db  10 dup(0)
+    
+    in_number       db  6
+                    db  0
+                    db  6  dup(0)
 
+    arrow           db  9, '==>', 9, '$'
     item_name_hint  db  'Please enter the name of item: ', '$'
     ; found_hint      db  'Item found!', '$'
     not_found_hint  db  'Item not found!', '$'
     order_make_hint db  'Success place order!', '$'
     order_err_hint  db  'Fail to place order!', '$'
+    err_item_hint   db  'Please choose an item!', '$'
     
     item_dtl_1      db  'item name: ', '$'
     item_dtl_2      db  'item discount: ', '$'
@@ -154,6 +160,28 @@ place_order_exit:
     popa
     ret
 place_order endp
+
+modify_item proc
+    pusha
+    cmp     curr_item, null
+    jne     set_discount
+err_item:
+    io      09h, <offset err_item_hint>
+    print_line
+    jmp     modify_item_exit
+set_discount:
+    mov     si, curr_item
+    io      09h, <offset item_dtl_2>
+    mov     ax, byte ptr 10[si]
+    call    print_number
+    io      09h, <offset arrow>
+    io      0ah, <offset in_number>
+
+
+modify_item_exit:    
+    popa
+    ret
+endp
 
 code ends
 end
