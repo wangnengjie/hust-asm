@@ -1,6 +1,6 @@
 ; author: wnj
 ; proc: calc_all_rate, calc_rate, print_number
-public  calc_all_rate, calc_rate, print_number
+public  calc_all_rate, calc_rate, print_number, stoi16
 extrn   item_1: byte, max_item: word
 
 putchar macro char
@@ -19,6 +19,7 @@ stack segment use16 stack
 stack ends
 
 data segment use16 para public 'data'
+    int16   dw  0
 data ends
 
 code segment use16 para public 'code'
@@ -83,6 +84,35 @@ loop_print_number:
     popa
     ret
 print_number endp
+
+stoi16 proc
+    pushad
+    movzx   cx, byte ptr -1[bx]
+    xor     eax, eax
+    xor     edx, edx
+stoi16_loop:
+    mov     dl, [bx]
+    cmp     dl, '9'
+    ja      invalid
+    cmp     dl, '0'
+    jb      invalid
+    sub     dl, 30h
+    imul    eax, 10
+    add     eax, edx
+    inc     bx
+    loop    stoi16_loop
+    cmp     eax, 0ffffh
+    ja      invalid
+    mov     int16, ax
+    popad
+    mov     dx, 1
+    mov     ax, int16
+    ret
+invalid:
+    popad
+    mov     dx, 0
+    ret
+endp
 
 code ends
 end

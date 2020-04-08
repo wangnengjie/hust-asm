@@ -3,7 +3,7 @@
 public  max_item, curr_item, item_1
 public  search_item, place_order
 extrn   null: byte, auth: byte, CRLF: byte
-extrn   calc_all_rate: near, print_number: near
+extrn   calc_all_rate: near, print_number: near, stoi16: near
 
 print_line macro
     io      09h, <offset CRLF>
@@ -63,10 +63,11 @@ data segment use16 para public 'data'
     
     item_dtl_1      db  'item name: ', '$'
     item_dtl_2      db  'item discount: ', '$'
-    item_dtl_3      db  'sell price: ', '$'
-    item_dtl_4      db  'purchase volume: ', '$'
-    item_dtl_5      db  'quantity sold: ', '$'
-    item_dtl_6      db  'rate: ', '$'
+    item_dtl_3      db  'purchase price: ', '$'
+    item_dtl_4      db  'sell price: ', '$'
+    item_dtl_5      db  'purchase volume: ', '$'
+    item_dtl_6      db  'quantity sold: ', '$'
+    item_dtl_7      db  'rate: ', '$'
 data ends
 
 code segment use16 para public 'code'
@@ -120,19 +121,19 @@ item_name_loop:
     movzx   ax, byte ptr 10[si]
     call    print_number
     print_line
-    io      09h, <offset item_dtl_3>
+    io      09h, <offset item_dtl_4>
     mov     ax, 13[si]
     call    print_number
     print_line
-    io      09h, <offset item_dtl_4>
+    io      09h, <offset item_dtl_5>
     mov     ax, 15[si]
     call    print_number
     print_line
-    io      09h, <offset item_dtl_5>
+    io      09h, <offset item_dtl_6>
     mov     ax, 17[si]
     call    print_number
     print_line
-    io      09h, <offset item_dtl_6>
+    io      09h, <offset item_dtl_7>
     mov     ax, 19[si]
     call    print_number
     print_line
@@ -170,15 +171,67 @@ err_item:
     print_line
     jmp     modify_item_exit
 set_discount:
+    print_line
     mov     si, curr_item
     io      09h, <offset item_dtl_2>
-    mov     ax, byte ptr 10[si]
+    movzx   ax, byte ptr 10[si]
     call    print_number
     io      09h, <offset arrow>
     io      0ah, <offset in_number>
-
-
-modify_item_exit:    
+    cmp     in_number + 2, 13
+    je      set_in_price
+    lea     bx, in_number + 2
+    call    stoi16
+    cmp     dx, 0
+    je      set_discount
+    cmp     ax, 10
+    ja      set_discount
+    cmp     ax, 0
+    jbe     set_discount
+    mov     10[si], al
+set_in_price:
+    print_line
+    io      09h, <offset item_dtl_3>
+    mov     ax, 11[si]
+    call    print_number
+    io      09h, <offset arrow>
+    io      0ah, <offset in_number>
+    cmp     in_number + 2, 13
+    je      set_sell_price
+    lea     bx, in_number + 2
+    call    stoi16
+    cmp     dx, 0
+    je      set_in_price
+    mov     11[si], ax
+set_sell_price:
+    print_line
+    io      09h, <offset item_dtl_4>
+    mov     ax, 13[si]
+    call    print_number
+    io      09h, <offset arrow>
+    io      0ah, <offset in_number>
+    cmp     in_number + 2, 13
+    je      set_in_amount
+    lea     bx, in_number + 2
+    call    stoi16
+    cmp     dx, 0
+    je      set_sell_price
+    mov     13[si], ax
+set_in_amount:
+    print_line
+    io      09h, <offset item_dtl_5>
+    mov     ax, 15[si]
+    call    print_number
+    io      09h, <offset arrow>
+    io      0ah, <offset in_number>
+    cmp     in_number + 2, 13
+    je      modify_item_exit
+    lea     bx, in_number + 2
+    call    stoi16
+    cmp     dx, 0
+    je      set_in_amount
+    mov     15[si], ax
+modify_item_exit:
     popa
     ret
 endp
