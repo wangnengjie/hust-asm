@@ -1,7 +1,7 @@
 ; author: wnj
 ; proc: search_item, place_order
 public  max_item, curr_item, item_1
-public  search_item, place_order
+public  search_item, place_order, modify_item
 extrn   null: byte, auth: byte, CRLF: byte
 extrn   calc_all_rate: near, print_number: near, stoi16: near
 
@@ -53,7 +53,7 @@ data segment use16 para public 'data'
                     db  0
                     db  6  dup(0)
 
-    arrow           db  9, '==>', 9, '$'
+    arrow           db  ' ==> ', '$'
     item_name_hint  db  'Please enter the name of item: ', '$'
     ; found_hint      db  'Item found!', '$'
     not_found_hint  db  'Item not found!', '$'
@@ -164,7 +164,7 @@ place_order endp
 
 modify_item proc
     pusha
-    cmp     curr_item, null
+    cmp     curr_item, offset null
     jne     set_discount
 err_item:
     io      09h, <offset err_item_hint>
@@ -234,7 +234,7 @@ set_in_amount:
 modify_item_exit:
     popa
     ret
-endp
+modify_item endp
 
 code ends
 end

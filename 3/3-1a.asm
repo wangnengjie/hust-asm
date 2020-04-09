@@ -1,6 +1,6 @@
 public  null, auth, CRLF
 extrn   curr_item: word
-extrn   search_item: near, place_order: near, calc_all_rate: near
+extrn   search_item: near, place_order: near, calc_all_rate: near, modify_item: near
 
 print_line macro
     io      09h, <offset CRLF>
@@ -96,6 +96,8 @@ entry_point:
     je      func_3
     cmp     al, 4
     je      func_4
+    cmp     al, 6
+    je      func_6
     cmp     al, 8
     je      func_8
     cmp     al, 9
@@ -113,6 +115,9 @@ func_3:
 func_4:
     call    calc_all_rate
     jmp     entry_point
+func_6:
+    call    modify_item
+    jmp     wait_for_check
 func_8:
     call    print_cs
     jmp     wait_for_check

@@ -112,7 +112,7 @@ invalid:
     popad
     mov     dx, 0
     ret
-endp
+stoi16 endp
 
 code ends
 end
