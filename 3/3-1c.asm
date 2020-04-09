@@ -1,5 +1,5 @@
 ; author: wnj
-; proc: calc_all_rate, calc_rate, print_number
+; proc: calc_all_rate, calc_rate, print_number, stoi16
 public  calc_all_rate, calc_rate, print_number, stoi16
 extrn   item_1: byte, max_item: word
 

@@ -1,5 +1,5 @@
 ; author: wnj
-; proc: search_item, place_order
+; proc: search_item, place_order, modify_item
 public  max_item, curr_item, item_1
 public  search_item, place_order, modify_item
 extrn   null: byte, auth: byte, CRLF: byte
