@@ -56,6 +56,7 @@ data segment use16 para public 'data'
     arrow           db  ' ==> ', '$'
     item_name_hint  db  'Please enter the name of item: ', '$'
     ; found_hint      db  'Item found!', '$'
+    auth_err_hint   db  'Please log in as boss!', '$'
     not_found_hint  db  'Item not found!', '$'
     order_make_hint db  'Success place order!', '$'
     order_err_hint  db  'Fail to place order!', '$'
@@ -164,6 +165,11 @@ place_order endp
 
 modify_item proc
     pusha
+    cmp     auth, 1
+    je      start_modify
+    io      09h, <offset auth_err_hint>
+    jmp     modify_item_exit
+start_modify:
     cmp     curr_item, offset null
     jne     set_discount
 err_item:
