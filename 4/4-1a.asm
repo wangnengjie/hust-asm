@@ -1,4 +1,4 @@
-public  null, auth, CRLF
+public  null, auth, CRLF, key
 extrn   curr_item: word
 extrn   search_item: near, place_order: near, calc_all_rate: near, modify_item: near, print_number: near
 
@@ -41,12 +41,15 @@ stack ends
 data segment use16 para public 'data'
     null            db  ?
     CRLF            db  13, 10, '$'
-    auth            db  0
+    auth            dw  0
     shop_name       db  'shop', '$'
     customer        db  'customer', '$'
     boss_name       db  'wangnengjie', 0
-    boss_pwd        db  '123456', 0
-
+    boss_pwd        db  ('f' + 16h) xor 10100100b
+                    db  ('x' + 16h) xor 10100100b
+                    db  ('x' + 16h) xor 10100100b
+                    db  ('k' + 16h) xor 10100100b
+                    db  0
     in_username     db  15
                     db  0
                     db  15 dup(0)
@@ -69,10 +72,12 @@ data segment use16 para public 'data'
                     db  '7. Migrate runtime', 13, 10
                     db  '8. Show head address of stack segment', 13, 10
                     db  '9. Exit', 13, 10, '$'
-
+    key             dw  5c6eh, ?
     login_fail_hint db  'Login failed!', '$'
     login_succ_hint db  'Success login in', '$'
     next_step_hint  db  '(press any key to continue)', '$'
+    old_1           dw  ?, ?
+    old_3           dw  ?, ?
 data ends
 
 stackbak segment use16 para public 'stackbak'
@@ -88,7 +93,27 @@ code segment use16 para public 'code'
 start:
     mov     ax, data
     mov     ds, ax
+    xor     ax, ax
+    mov     es, ax
+    mov     ax, es:[1h*4]
+    mov     old_1, ax
+    mov     ax, es:[1h*4+2]
+    mov     old_1 + 2, ax
+    mov     ax, es:[3h*4]
+    mov     old_3, ax
+    mov     ax, es:[3h*4+2]
+    mov     old_3 + 2, ax
+    CLI
+    mov     ax, new_1_3
+    mov     es:[1h*4], ax
+    mov     es:[1h*4+2], cs
+    mov     es:[3h*4], ax
+    mov     es:[3h*4+2], cs
+    STI
     jmp     entry_point
+
+new_1_3:
+    iret
 
 wait_for_check:
     print_line
@@ -166,12 +191,30 @@ verify_username_check_loop:
     jne     verify_username_check_loop
     cmp     byte ptr[bx], 13
     jne     verify_username_check_loop
-    jmp     verify_pwd
+    CLI
+    push    verify_pwd
+    pop     bx
+    mov     ax, [esp-2]
+    STI
+    jmp     ax
 verify_pwd:
+    CLI
+    mov     ah, 2ch
+    int     21h
+    push    dx
+    mov     key+2, dx
     lea     bx, in_pwd + 2
     lea     si, boss_pwd
+    mov     ah, 2ch
+    int     21h
+    STI
+    cmp     dx, [esp]
+    pop     ax
+    jne     login_fail
 verify_pwd_check_loop:
     mov     al, [bx]
+    add     al, 16h
+    xor     al, 10100100b
     cmp     byte ptr[si], al
     jne     login_fail
     inc     si
@@ -180,7 +223,9 @@ verify_pwd_check_loop:
     jne     verify_pwd_check_loop
     cmp     byte ptr[bx], 13
     jne     verify_pwd_check_loop
-    mov     auth, 1
+    mov     ax, key
+    xor     ax, key+2
+    mov     auth, ax
     io      09h, <offset login_succ_hint>
     jmp     login_exit
 login_fail:
@@ -195,7 +240,9 @@ login endp
 show_menu proc
     pusha
     io      09h, <offset menu_1>
-    cmp     auth, 1
+    mov     ax, key
+    xor     ax, key+2
+    cmp     auth, ax
     je      show_menu_bname
     io      09h, <offset customer>
     jmp     show_menu_p1
@@ -286,7 +333,7 @@ change_to_bak:
     mov     ax, stackbak
 change_ss:
     mov     ss, ax
-    xor     cs:target, 1
+    xor     cs:target, 1 ; 0 => 1 1 => 0
 new_int8_exit:
     pop     ds
     popa
@@ -338,6 +385,16 @@ exit:
     mov     ds:[8h*4], ax
     mov     ax, cs:old_int + 2
     mov     ds:[8h*4+2], ax
+    STI
+    CLI
+    mov  ax, old_1
+    mov  ds:[1h*4], ax
+    mov  ax, old_1 + 2
+    mov  ds:[1h*4+2], ax
+    mov  ax, old_3
+    mov  ds:[3h*4], ax
+    mov  ax, old_3 + 2
+    mov  ds:[3h*4+2], ax 
     STI
 exit_point:
     mov     ah, 4ch

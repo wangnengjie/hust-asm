@@ -48,6 +48,7 @@ calc_rate proc
     mov     ecx, eax
 
     movzx   eax, word ptr 11[si]
+    xor     eax, 666
     mov     ebx, 1280               ; 经测试，直接*1280比位运算2^10+2^8更快
     mul     ebx
     div     ecx

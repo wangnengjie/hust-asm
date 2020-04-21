@@ -2,7 +2,7 @@
 ; proc: search_item, place_order, modify_item
 public  max_item, curr_item, item_1
 public  search_item, place_order, modify_item
-extrn   null: byte, auth: byte, CRLF: byte
+extrn   null: byte, auth: word, CRLF: byte, key: word
 extrn   calc_all_rate: near, print_number: near, stoi16: near
 
 print_line macro
@@ -35,15 +35,17 @@ stack segment use16 stack
 stack ends
 
 data segment use16 para public 'data'
-    N               equ 10
+    N               equ 3
+    secr            equ 666
     max_item        dw  N
     curr_item       dw  null
     ; dw    in_price, sell_price, in_amount, sell_amount, rate
     item_1          db  'bag', 7 dup(0), 8
-                    dw  35, 56, 50, 0, ?
+                    dw  35 xor secr, 56, 50, 0, ?
     item_2          db  'book', 6 dup(0), 9
-                    dw  12, 30, 25, 5, ?
-    item_temp       db  N - 2 dup('TempValue', 0, 8, 15, 0, 20, 0, 30, 0, 2, 0, ?, ?)
+                    dw  12 xor secr, 30, 25, 5, ?
+    item_3          db  'pen', 6 dup(0), 9
+                    dw  12 xor secr, 30, 25, 5, ?
     
     in_item         db  10
                     db  0
@@ -165,7 +167,9 @@ place_order endp
 
 modify_item proc
     pusha
-    cmp     auth, 1
+    mov     ax, key
+    xor     ax, key+2
+    cmp     auth, ax
     je      start_modify
     io      09h, <offset auth_err_hint>
     jmp     modify_item_exit
@@ -199,6 +203,7 @@ set_in_price:
     print_line
     io      09h, <offset item_dtl_3>
     mov     ax, 11[si]
+    xor     ax, secr
     call    print_number
     io      09h, <offset arrow>
     io      0ah, <offset in_number>
@@ -208,6 +213,7 @@ set_in_price:
     call    stoi16
     cmp     dx, 0
     je      set_in_price
+    xor     ax, secr
     mov     11[si], ax
 set_sell_price:
     print_line
