@@ -2,3 +2,10 @@
 *.OBJ
 *.TR
 test.*
+4/Final.EXE
+.vs
+*.sln
+Debug
+Release
+*.vcxproj.*
+*.vcxproj

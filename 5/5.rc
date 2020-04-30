@@ -1,0 +1,16 @@
+600 MENU DISCARDABLE
+BEGIN
+    POPUP "File"
+    BEGIN
+        MENUITEM "Exit", 1001
+    END
+    POPUP "Action"
+    BEGIN
+        MENUITEM "Recommendation", 2001
+        MENUITEM "List Sort", 2002
+    END
+    POPUP "Help"
+    BEGIN
+        MENUITEM "About", 3001
+    END
+END
