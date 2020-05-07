@@ -1,5 +1,6 @@
 .386
 .model flat, C
+option casemap:none
 
 .data
     username_hint   db  'Please enter your username(q to exit): ', 0
@@ -162,7 +163,10 @@ search_item_exit:
     cmp     flag, 1
     jne     search_item_return
     mov     eax, curr_item
+    jmp     s_ret
 search_item_return:
+    mov     eax, 0
+s_ret:
     ret
 search_item endp
 
